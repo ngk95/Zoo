@@ -1,0 +1,59 @@
+# depslib dependency file v1.0
+1692363740 source:c:\users\fujitsu\desktop\c++\newzoo\src\enclosure.cpp
+	"Enclosure.h"
+
+1692364252 c:\users\fujitsu\desktop\c++\newzoo\include\enclosure.h
+	<vector>
+	"Animal.h"
+
+1692364489 c:\users\fujitsu\desktop\c++\newzoo\include\animal.h
+	<iostream>
+
+1692364532 source:c:\users\fujitsu\desktop\c++\newzoo\src\elephant.cpp
+	"Elephant.h"
+
+1692363867 c:\users\fujitsu\desktop\c++\newzoo\include\elephant.h
+	"Animal.h"
+
+1692363754 source:c:\users\fujitsu\desktop\c++\newzoo\src\horse.cpp
+	"Horse.h"
+
+1692363885 c:\users\fujitsu\desktop\c++\newzoo\include\horse.h
+	"Animal.h"
+
+1692364532 source:c:\users\fujitsu\desktop\c++\newzoo\src\lion.cpp
+	"Lion.h"
+
+1692363881 c:\users\fujitsu\desktop\c++\newzoo\include\lion.h
+	"Animal.h"
+
+1692364618 source:c:\users\fujitsu\desktop\c++\newzoo\src\animal.cpp
+	"Animal.h"
+	<iostream>
+
+1692364829 source:c:\users\fujitsu\desktop\c++\newzoo\src\zookeeper.cpp
+	"Zookeeper.h"
+
+1692364793 c:\users\fujitsu\desktop\c++\newzoo\include\zookeeper.h
+	<string>
+	<Horse.h>
+
+1692364902 source:c:\users\fujitsu\desktop\c++\newzoo\main.cpp
+	<iostream>
+	<string>
+	<vector>
+	"Zoo.h"
+
+1692365154 c:\users\fujitsu\desktop\c++\newzoo\include\zoo.h
+	<string>
+	<iostream>
+	<vector>
+	"Zookeeper.h"
+	"Enclosure.h"
+	"Lion.h"
+	"Horse.h"
+	"Elephant.h"
+
+1692365154 source:c:\users\fujitsu\desktop\c++\newzoo\src\zoo.cpp
+	"Zoo.h"
+
