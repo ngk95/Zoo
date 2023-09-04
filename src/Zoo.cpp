@@ -1,54 +1,61 @@
 #include "Zoo.h"
+#include "Zookeeper.h"
 
 Zoo::Zoo(const std::string& name)
-    : m_name(name), m_days(0), m_visitors(0), m_foodAmount(0),
-      m_budget(0), m_profit(0), m_donations(0) {
+    : m_name(name), m_days(1), m_visitors(0), m_foodStored(0),
+      m_budget(100), m_donations(0) {
     std::cout << "The zoo " << m_name << " is now open!" << std::endl;
 }
 
 void Zoo::endDay() {
+    std::cout << "The zoo is closed for the day" << std::endl;
+    std::cout << "Visitors today: " << m_visitors << std::endl << std::endl;
+    std::cout << "Starting day: " << m_days + 1<< " with a budget of " << m_budget << std::endl;
+
     m_days++;
-    std::cout << "The zoo is closed for the day." << std::endl;
-    std::cout << "Today's profit: " << m_profit << std::endl;
-    std::cout << "Starting day: " << m_days + 1<< std::endl;
 
-    for (std::vector<Enclosure>::iterator encIt = m_enclosures.begin(); encIt != m_enclosures.end(); ++encIt) {
-        for (std::vector<Animal*>::iterator aniIt = encIt->getAnimalsBegin(); aniIt != encIt->getAnimalsEnd(); ++aniIt) {
-            (*aniIt)->increaseHappiness();
-            (*aniIt)->incrementMealsToday();
-            (*aniIt)->update();
-        }
-    encIt->setClean(false);
-}
-
-    for (Zookeeper &zookeeper : m_zookeepers) {
-        zookeeper.setWorkDone(0);
+    for (auto& animal : m_animals) {
+        animal->setHappiness(0);
+        animal->resetMealsToday();
     }
 
-    m_profit = m_visitors + m_donations - m_budget;
+    for (auto& zookeeper : m_zookeepers) {
+        zookeeper->setWorkDone(0);
+    }
+
     m_visitors = 0;
     m_donations = 0;
 }
 
-void Zoo::hireZookeeper(const std::string& name, int daysExperience) {
-    m_zookeepers.push_back(Zookeeper(name, daysExperience));
+void Zoo::hireZookeeper(const std::string& name) {
+    std::shared_ptr<Zookeeper> newZookeeper = std::make_shared<Zookeeper>(name);
+    m_zookeepers.push_back(newZookeeper);
 }
 
-void Zoo::fireZookeeper(const std::string& name) {
-    for (size_t i = 0; i < m_zookeepers.size(); i++) {
-        if (m_zookeepers[i].getName() == name) {
-            m_zookeepers.erase(m_zookeepers.begin() + i);
-            return;
-        }
-    }
+void Zoo::fireZookeeper(std::shared_ptr<Zookeeper> zookeeperToFire) {
+    m_zookeepers.erase(std::remove(m_zookeepers.begin(), m_zookeepers.end(), zookeeperToFire), m_zookeepers.end());
 }
 
 void Zoo::buyFood(int amount) {
     if (amount <= m_budget) {
-        m_foodAmount += amount;
+        m_foodStored += amount;
         m_budget -= amount;
+        std::cout << "You successfully purchased " << amount << " units of food" << std::endl;
     } else {
-        std::cout << "Not enough budget to buy the food." << std::endl;
+        std::cout << "Not enough budget to buy the food" << std::endl;
+    }
+}
+
+int Zoo::provideFood(int amount) {
+    if (m_foodStored <= amount) {
+        m_foodStored -= amount;
+        return amount;
+    } else if (m_foodStored < amount && m_foodStored > 0) {
+        m_foodStored = 0;
+        return m_foodStored;
+    } else {
+        std::cout << "There is no food in the zoo" << std::endl;
+        return 0;
     }
 }
 
@@ -57,15 +64,18 @@ void Zoo::acceptVisitors(int visitors) {
 }
 
 int Zoo::askForDonations() {
-    if (m_budget > 0) {
-        std::cout << "The zoo can't ask for donations because the budget is not low enough." << std::endl;
+    if (m_budget > 200) {
+        std::cout << "The zoo can't ask for donations because the budget is not low enough" << std::endl;
         return 0;
     }
     int donation = rand() % 100 + 1;
     m_budget += donation;
-    m_donations += donation;
     std::cout << "The zoo received a donation of " << donation << std::endl;
     return donation;
+}
+
+void Zoo::incrementBudget(int increment) {
+    m_budget += increment;
 }
 
 int Zoo::getDays() const {
@@ -77,61 +87,58 @@ int Zoo::getVisitors() const {
 }
 
 int Zoo::getFoodAmount() const {
-    return m_foodAmount;
+    return m_foodStored;
 }
 
 int Zoo::getBudget() const {
     return m_budget;
 }
 
-int Zoo::getProfit() const {
-    return m_profit;
-}
-
 int Zoo::getDonations() const {
     return m_donations;
 }
 
-void Enclosure::addAnimal(Animal* animal) {
-    if (countAnimals() < m_capacity && animal->getType() == m_animalType) {
-        animals.push_back(animal);
-    }
-}
-
-void Enclosure::removeAnimal(Animal* animal) {
-    std::vector<Animal*>::iterator it;
-    for (it = animals.begin(); it != animals.end(); ++it) {
-        if (*it == animal) {
-            animals.erase(it);
-            break;
+bool Zoo::isAnimalPresent(std::string name) const {
+    for (auto& animal : m_animals) {
+        if (animal->getName() == name) {
+            return true;
         }
     }
+    return false;
 }
 
-int Enclosure::countAnimals() const {
-    return animals.size();
+void Zoo::addAnimal(AnimalType type, std::string name, std::shared_ptr<Enclosure> enclosure) {
+    if (countAnimals() < enclosure->getCapacity() && type == enclosure->getAnimalType() && !isAnimalPresent(name)) {
+        std::shared_ptr<Animal> animal;
+        if (type == AnimalType::LION) {
+            animal = std::make_shared<Lion>(name, enclosure);
+        } else if (type == AnimalType::ELEPHANT) {
+            animal = std::make_shared<Elephant>(name, enclosure);
+        } else if (type == AnimalType::HORSE) {
+            animal = std::make_shared<Horse>(name, enclosure);
+        }
+        if (animal != nullptr) {
+            m_animals.push_back(animal);
+            std::cout << name << " was successfully added to " << m_name << std::endl;
+        }
+    } else {
+        std::cout << name << " can't be included in " << m_name << std::endl;
+    }
 }
 
-std::vector<Animal*>::iterator Enclosure::begin() {
-    return animals.begin();
+void Zoo::removeAnimal(std::shared_ptr<Animal> animalToDelete) {
+    m_animals.erase(std::remove(m_animals.begin(), m_animals.end(), animalToDelete), m_animals.end());
 }
 
-std::vector<Animal*>::iterator Enclosure::end() {
-    return animals.end();
+std::shared_ptr<Animal> Zoo::findAnimal(const std::string& name) const {
+    for (const auto& animal : m_animals) {
+        if (animal->getName() == name) {
+            return animal;
+        }
+    }
+    return nullptr;
 }
 
-std::vector<Animal*>::const_iterator Enclosure::begin() const {
-    return animals.begin();
-}
-
-std::vector<Animal*>::const_iterator Enclosure::end() const {
-    return animals.end();
-}
-
-std::vector<Animal*>::iterator Enclosure::getAnimalsBegin() {
-    return animals.begin();
-}
-
-std::vector<Animal*>::iterator Enclosure::getAnimalsEnd() {
-    return animals.end();
+int Zoo::countAnimals() const {
+    return m_animals.size();
 }

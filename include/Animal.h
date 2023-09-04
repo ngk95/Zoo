@@ -2,6 +2,11 @@
 #define ANIMAL_H
 
 #include <iostream>
+#include <string>
+#include <memory>
+
+class Zoo;
+class Enclosure;
 
 enum class AnimalType {
     LION,
@@ -11,20 +16,24 @@ enum class AnimalType {
 
 class Animal {
 private:
-    const int m_foodPerMeal;
+    AnimalType m_type;
+    const std::string m_name;
     int m_happiness;
     int m_mealsToday;
-    AnimalType m_type;
-    int m_weight;
+    std::shared_ptr<Enclosure> enclosure;
+
+protected:
+    const int m_foodPerMeal;
+    const int m_weight;
 
 public:
-    Animal(AnimalType type, int foodPerMeal, int weight);
+    Animal(AnimalType type, std::string m_name, std::shared_ptr<Enclosure> enclosure, int foodPerMeal, int weight);
     virtual ~Animal();
 
     void eat();
-    void play(Animal& other);
-    virtual void performForVisitors() = 0;
-    virtual void update();
+    void play(std::shared_ptr<Animal> other);
+    virtual void performForVisitors(Zoo& zoo);
+    virtual void update() = 0;
 
     void increaseHappiness();
 
@@ -32,9 +41,11 @@ public:
     int getMealsToday() const;
     AnimalType getType() const;
     int getWeight() const;
+    std::string getName() const;
 
     void setHappiness(int happiness);
     void incrementMealsToday();
+    void resetMealsToday();
     void setType(AnimalType type);
     void setWeight(int weight);
 };

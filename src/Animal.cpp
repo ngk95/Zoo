@@ -1,30 +1,41 @@
 #include "Animal.h"
+#include "Enclosure.h"
 #include <iostream>
+#include <string>
 
-Animal::Animal(AnimalType type, int foodPerMeal, int weight)
-    : m_type(type), m_foodPerMeal(foodPerMeal), m_happiness(0), m_mealsToday(0), m_weight(weight) {}
+Animal::Animal(AnimalType type, std::string name, std::shared_ptr<Enclosure> enclosure, int foodPerMeal, int weight)
+    : m_type(type), m_name(name), m_happiness(0), m_mealsToday(0), enclosure(enclosure), m_foodPerMeal(foodPerMeal), m_weight(weight) {}
 
 Animal::~Animal() {}
 
 void Animal::eat() {
     if (m_mealsToday < 3) {
-        m_mealsToday++;
-        increaseHappiness();
+        if (enclosure->getFoodStored() >= m_foodPerMeal) {
+            m_mealsToday++;
+            increaseHappiness();
+            enclosure->decrementFood(m_foodPerMeal);
+            std::cout << m_name << " has eaten. Remaining food in enclosure: " << enclosure->getFoodStored() << std::endl;
+        } else {
+            std::cout << "Not enough food to feed " << m_name << std::endl;
+        }
     } else {
-        std::cout << "This animal has already eaten 3 times today." << std::endl;
+        std::cout << m_name << " has already eaten 3 times today" << std::endl;
     }
 }
 
-void Animal::play(Animal& other) {
-    if (this->m_type == other.m_type) {
+void Animal::play(std::shared_ptr<Animal> other) {
+    if (this->m_type == other->m_type) {
         this->increaseHappiness();
-        other.increaseHappiness();
+        other->increaseHappiness();
+        std::cout << this->m_name << " and " << other->getName() << " played together and are now happier" << std::endl;
     } else {
-        std::cout << "Different types of animals cannot play together." << std::endl;
+        std::cout << "These animals can't play together" << std::endl;
     }
 }
 
-void Animal::update() {}
+void Animal::performForVisitors(Zoo& zoo) {
+    std::cout << "Performing" << std::endl;
+}
 
 void Animal::increaseHappiness() {
     m_happiness++;
@@ -46,6 +57,10 @@ int Animal::getWeight() const {
     return m_weight;
 }
 
+std::string Animal::getName() const{
+    return m_name;
+}
+
 void Animal::setHappiness(int happiness) {
     m_happiness = happiness;
 }
@@ -54,10 +69,10 @@ void Animal::incrementMealsToday() {
     m_mealsToday++;
 }
 
-void Animal::setType(AnimalType type) {
-    m_type = type;
+void Animal::resetMealsToday(){
+    m_mealsToday = 0;
 }
 
-void Animal::setWeight(int weight) {
-    m_weight = weight;
+void Animal::setType(AnimalType type) {
+    m_type = type;
 }

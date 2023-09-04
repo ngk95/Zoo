@@ -1,7 +1,11 @@
 #ifndef HORSE_H
 #define HORSE_H
 
+#include "Zoo.h"
 #include "Animal.h"
+
+class Zoo;
+class Enclosure;
 
 class Horse : public Animal {
 private:
@@ -9,12 +13,13 @@ private:
     int m_daysSinceLastShoed;
 
 public:
-    Horse();
+    Horse(std::string name, std::shared_ptr<Enclosure> enclosure);
 
     void incrementShoeing();
 
     bool getIsShoed() const;
     int getDaysSinceLastShoed() const;
+    virtual void performForVisitors(Zoo& zoo) override;
     void update() override;
 
     void setIsShoed(bool isShoed);
